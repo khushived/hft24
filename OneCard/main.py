@@ -13,7 +13,12 @@ db = SQLAlchemy(app)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
+    name = db.Column(db.String(20), nullable=False)
+    age = db.Column(db.Integer, nullable=False)
+    phone_number = db.Column(db.String(20), nullable=False)
+    sex = db.Column(db.String(10), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    blood_group = db.Column(db.String(5), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
     # appointment_symptoms = db.Column(db.String(200))
@@ -57,7 +62,12 @@ def home():
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
+        name = request.form['name']
+        age = request.form['age']
+        phone_number = request.form['phone_number']
+        sex = request.form['sex']
+        address = request.form['address']
+        blood_group = request.form['blood_group']
         email = request.form['email']
         password = request.form['password']
 
@@ -71,7 +81,21 @@ def register():
             flash('Email address already exists. Please use a different email.', 'danger')
             return redirect(url_for('register'))
 
-        user = User(username=username, email=email, password=password)
+        if password != confirm_password:
+            flash('Passwords do not match. Please try again.', 'danger')
+            return redirect(url_for('register'))
+
+        user = User(
+            name=name,
+            age=age,
+            phone_number=phone_number,
+            sex=sex,
+            address=address,
+            blood_group=blood_group,
+            email=email,
+            password=password
+        )
+
         db.session.add(user)
         db.session.commit()
 
@@ -79,7 +103,6 @@ def register():
         return redirect(url_for('login'))
 
     return render_template("register.html")
-
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -90,21 +113,38 @@ def login():
 
         if user and check_password_hash(user.password, password):
             session['user_id'] = user.id
-            session['username'] = user.username
+            session['username'] = user.name
             flash('Login successful!', 'success')
             return redirect(url_for('profile'))
         else:
             flash('Invalid email or password. Please try again.', 'danger')
 
     return render_template("login.html")
-
 @app.route("/dashboard")
 def dashboard():
     if 'user_id' in session:
-        username = session['username']
-        return render_template("dashboard.html", username=username)
+        name = session['name']
+        return render_template("dashboard.html", name=name)
     else:
         return redirect(url_for('login'))
+
+@app.route("/profile")
+def profile():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        user = User.query.get(user_id)
+        return render_template("profile.html", user=user)
+    else:
+        return redirect(url_for('login'))
+
+@app.route("/view_history")
+def view_history():
+    if 'user_id' in session:
+        name = session['name']
+        return render_template("view_history.html", name=name)
+    else:
+        return redirect(url_for('login'))
+    # Add logic to fetch and display user's view history
 
 @app.route("/logout")
 def logout():
