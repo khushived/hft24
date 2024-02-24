@@ -70,8 +70,9 @@ def register():
         blood_group = request.form['blood_group']
         email = request.form['email']
         password = request.form['password']
+        confirm_password = request.form['confirm_password']
 
-        existing_username = User.query.filter_by(username=username).first()
+        existing_username = User.query.filter_by(name=name).first()
         if existing_username:
             flash('Username already exists. Please choose a different username.', 'danger')
             return redirect(url_for('register'))
@@ -111,9 +112,10 @@ def login():
 
         user = User.query.filter_by(email=email).first()
 
-        if user and check_password_hash(user.password, password):
+        if user and password==user.password:
             session['user_id'] = user.id
             session['username'] = user.name
+            
             flash('Login successful!', 'success')
             return redirect(url_for('profile'))
         else:
@@ -128,14 +130,6 @@ def dashboard():
     else:
         return redirect(url_for('login'))
 
-@app.route("/profile")
-def profile():
-    if 'user_id' in session:
-        user_id = session['user_id']
-        user = User.query.get(user_id)
-        return render_template("profile.html", user=user)
-    else:
-        return redirect(url_for('login'))
 
 @app.route("/view_history")
 def view_history():
