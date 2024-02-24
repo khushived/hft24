@@ -40,7 +40,12 @@ class Doctor(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
     verified = db.Column(db.Boolean, default=False)
+    hospital_name = db.Column(db.String(100), nullable=True)
+    years_of_experience = db.Column(db.Integer, nullable=True)
+
     # address = db.Column(db.String(200), nullable=False)
+    def appointments(self):
+        return Appointment.query.filter_by(doctor_id=self.id).all()
 
     def generate_qr_code(self):
         unique_id = str(uuid.uuid4())
@@ -51,6 +56,15 @@ class Doctor(db.Model):
         img_bytes = BytesIO()
         img.save(img_bytes, format='PNG')
         return img_bytes.getvalue()
+    
+class Appointment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('appointments', lazy=True))
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'), nullable=False)
+    doctor = db.relationship('Doctor', backref=db.backref('appointments', lazy=True))
+    symptoms = db.Column(db.String(200), nullable=False)
+    date_time = db.Column(db.DateTime, nullable=False)
 
 with app.app_context():
     db.create_all()
@@ -152,6 +166,8 @@ def dregister():
         email = request.form['email']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
+        hospital_name = request.form['hospital_name']
+        years_of_experience = request.form['years_of_experience']
 
         if password != confirm_password:
             flash('Passwords do not match. Please try again.', 'error')
@@ -162,7 +178,7 @@ def dregister():
             flash('Email already exists. Please login.', 'error')
             return redirect(url_for('dlogin'))
 
-        new_doctor = Doctor(name=username, email=email, password=password)
+        new_doctor = Doctor(name=username, email=email, password=password,hospital_name=hospital_name,years_of_experience=years_of_experience)
         db.session.add(new_doctor)
         db.session.commit()
         flash('Registration successful. Please wait for verification.', 'success')
@@ -204,6 +220,15 @@ def book_appointment():
         return render_template("book_appointment.html")
     else:
         return redirect(url_for('login'))
-
+    
+@app.route("/doctor_profile/<int:doctor_id>")
+def doctor_profile(doctor_id):
+    doctor = Doctor.query.get(doctor_id)
+    if doctor:
+        appointments = doctor.appointments()
+        return render_template("doctor_profile.html", doctor=doctor, appointments=appointments)
+    else:
+        flash('Doctor not found!', 'error')
+        return redirect(url_for('home'))
 if __name__ == "__main__":
     app.run(debug=True)

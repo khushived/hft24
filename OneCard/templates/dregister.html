@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Register</title>
+    <title>Doctor Registration</title>
 </head>
 <body>
-    <h1>Register</h1>
+    <h1>Doctor Registration</h1>
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             <ul>
@@ -14,15 +14,25 @@
             </ul>
         {% endif %}
     {% endwith %}
-    <form method="post" action="{{ url_for('dregister') }}">
+    <form action="{{ url_for('dregister') }}" method="POST">
         <label for="username">Username:</label>
-        <input type="text" name="username" required><br>
+        <input type="text" id="username" name="username" required><br><br>
+
         <label for="email">Email:</label>
-        <input type="email" name="email" required><br>
+        <input type="email" id="email" name="email" required><br><br>
+
         <label for="password">Password:</label>
-        <input type="password" name="password" required><br>
+        <input type="password" id="password" name="password" required><br><br>
+
         <label for="confirm_password">Confirm Password:</label>
-        <input type="password" name="confirm_password" required><br>
+        <input type="password" id="confirm_password" name="confirm_password" required><br><br>
+
+        <label for="hospital_name">Hospital Name:</label>
+        <input type="text" id="hospital_name" name="hospital_name" required><br><br>
+
+        <label for="years_of_experience">Years of Experience:</label>
+        <input type="number" id="years_of_experience" name="years_of_experience" required><br><br>
+
         <button type="submit">Register</button>
     </form>
     <p>Already have an account? <a href="{{ url_for('dlogin') }}">Login here</a>.</p>

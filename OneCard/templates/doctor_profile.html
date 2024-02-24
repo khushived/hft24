@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Profile</title>
+</head>
+<body>
+    <h1>Doctor Profile</h1>
+    <p><strong>Doctor ID:</strong> {{ doctor.id }}</p>
+    <p><strong>Name:</strong> {{ doctor.name }}</p>
+    <p><strong>Hospital Name:</strong> {{ doctor.hospital_name }}</p>
+    <p><strong>Years of Experience:</strong> {{ doctor.years_of_experience }}</p>
+
+    <h2>Appointments</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Appointment ID</th>
+                <th>User</th>
+                <th>Symptoms</th>
+                <th>Date and Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appointment in appointments %}
+            <tr>
+                <td>{{ appointment.id }}</td>
+                <td>{{ appointment.user.username }}</td>
+                <td>{{ appointment.symptoms }}</td>
+                <td>{{ appointment.date_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
