@@ -1,5 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
+import qrcode
+import uuid
+from io import BytesIO
+from werkzeug.security import check_password_hash, generate_password_hash
+
 
 app = Flask(__name__)
 app.secret_key = 'abcdef'  # secret key do not change it
@@ -11,6 +16,36 @@ class User(db.Model):
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
+    # appointment_symptoms = db.Column(db.String(200))
+    # appointment_date_time = db.Column(db.String(100))
+
+    def generate_qr_code(self):
+        unique_id = str(uuid.uuid4())
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(unique_id)
+        qr.make(fit=True)
+        img = qr.make_image(fill='black', back_color='white')
+        img_bytes = BytesIO()
+        img.save(img_bytes, format='PNG')
+        return img_bytes.getvalue()
+
+class Doctor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(100), nullable=False)
+    verified = db.Column(db.Boolean, default=False)
+    # address = db.Column(db.String(200), nullable=False)
+
+    def generate_qr_code(self):
+        unique_id = str(uuid.uuid4())
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(unique_id)
+        qr.make(fit=True)
+        img = qr.make_image(fill='black', back_color='white')
+        img_bytes = BytesIO()
+        img.save(img_bytes, format='PNG')
+        return img_bytes.getvalue()
 
 with app.app_context():
     db.create_all()
@@ -26,7 +61,6 @@ def register():
         email = request.form['email']
         password = request.form['password']
 
-        # Check if the username already exists
         existing_username = User.query.filter_by(username=username).first()
         if existing_username:
             flash('Username already exists. Please choose a different username.', 'danger')
@@ -54,13 +88,13 @@ def login():
 
         user = User.query.filter_by(email=email).first()
 
-        if user and user.password == password:
+        if user and check_password_hash(user.password, password):
             session['user_id'] = user.id
             session['username'] = user.username
             flash('Login successful!', 'success')
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('profile'))
         else:
-            flash('Login unsuccessful. Please check your email and password.', 'danger')
+            flash('Invalid email or password. Please try again.', 'danger')
 
     return render_template("login.html")
 
@@ -76,6 +110,66 @@ def dashboard():
 def logout():
     session.clear()
     return redirect(url_for('home'))
+
+@app.route('/dregister', methods=['GET', 'POST'])
+def dregister():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+
+        if password != confirm_password:
+            flash('Passwords do not match. Please try again.', 'error')
+            return redirect(url_for('dregister'))
+
+        existing_doctor = Doctor.query.filter_by(email=email).first()
+        if existing_doctor:
+            flash('Email already exists. Please login.', 'error')
+            return redirect(url_for('dlogin'))
+
+        new_doctor = Doctor(name=username, email=email, password=password)
+        db.session.add(new_doctor)
+        db.session.commit()
+        flash('Registration successful. Please wait for verification.', 'success')
+        return redirect(url_for('dlogin'))
+
+    return render_template('dregister.html')
+
+@app.route('/dlogin', methods=['GET', 'POST'])
+def dlogin():
+    # Login functionality
+    return render_template('dlogin.html')
+
+@app.route("/profile")
+def profile():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        user = User.query.get(user_id)
+        qr_code = user.generate_qr_code()
+        return render_template("profile.html", user=user, qr_code=qr_code)
+    else:
+        return redirect(url_for('login'))
+
+@app.route("/book_appointment", methods=['GET', 'POST'])
+def book_appointment():
+    if 'user_id' in session:
+        if request.method == 'POST':
+            user_id = session['user_id']
+            symptoms = request.form['symptoms']
+            date_time = request.form['date_time']
+
+            user = User.query.get(user_id)
+            user.appointment_symptoms = symptoms
+            user.appointment_date_time = date_time
+            db.session.commit()
+
+            flash('Appointment booked successfully!', 'success')
+            return redirect(url_for('dashboard'))
+
+        return render_template("book_appointment.html")
+    else:
+        return redirect(url_for('login'))
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment</title>
+</head>
+<body>
+    <h1>Book Appointment</h1>
+    <form action="{{ url_for('book_appointment') }}" method="post">
+        <label for="symptoms">Symptoms:</label><br>
+        <input type="text" id="symptoms" name="symptoms" required><br><br>
+        <label for="date_time">Date and Time:</label><br>
+        <input type="datetime-local" id="date_time" name="date_time" required><br><br>
+        <input type="submit" value="Book Appointment">
+    </form>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</body>
+</html>

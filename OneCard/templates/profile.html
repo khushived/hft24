@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+   
+</head>
+<body>
+    <h1>User Profile</h1>
+    <p><strong>Username:</strong> {{ user.username }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <!-- You can display other user information here -->
+    <h2>QR Code</h2>
+    <img alt="QR Code" id="qr-img">
+    <!-- <img src="https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl={{ user.id }}&choe=UTF-8" alt="QR Code" id="qr-img"> -->
+</body>
+<script>
+    let userId= '{{user.id}}';
+    let imgUrl = window.location.origin;
+    let image = `${imgUrl}/profile/${userId}`
+    const imgElem = document.getElementById("qr-img");
+    imgElem.src = `https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${image}&choe=UTF-8`
+</script>
+</html>
