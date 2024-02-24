@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard</title>
+    <title>{% block title %}{% endblock %}</title>
+    {% block style %} {% endblock %}
 </head>
 <body>
-    <h1>Welcome, {{ name }}!</h1>
+    <h1>Welcome, {% block name %}{% endblock %}!</h1>
+
     <div>
         <h3>Menu</h3>
         <ul>
@@ -13,8 +15,9 @@
             <li><a href="{{ url_for('logout') }}">Logout</a></li>
         </ul>
     </div>
-    <form action="{{ url_for('logout') }}" method="post">
-        <button type="submit">Logout</button>
-    </form>
+
+    <div>
+        {% block content %}{% endblock %}
+    </div>
 </body>
 </html>

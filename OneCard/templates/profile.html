@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='user.css') }}">
+    <!-- <link rel="stylesheet" href="./static/user.css" -->
+    <title>User Profile</title>
+</head>
+<body>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+    <div class="container">
+        <div class="column1">
+            <img src="https://www.shutterstock.com/image-photo/passport-photo-portrait-asian-smiling-260nw-1062243491.jpg" alt="User Photo" class="center">
+        </div>
+        <div class="column2">
+            <div class="badges">
+                <span class="admin-badge">Admin</span>
+                <span class="verified-badge">&#10004; Verified</span>
+            </div>
+            <h2>{{user.id}}</h2>
+            <h4>{{user.name}}</h4>
+            <p>&#x260E; {{user.phone_number}}</p> 
+            <p>&#x1F4E7; {{user.email}}</p> 
+            <p style="padding-bottom: 15px;">&#x1F3E0;{{user.address}}</p>
+            <p><b>Age &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: </b>{{user.age}}</p>
+            <p><b>Sex &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: </b>{{user.sex}}</p>
+            <p><b>Blood Group: </b>{{user.blood_group}}</p>
+            <button class="view-more-button">View ID</button>
+        </div>
+    </div>
+</body>
+</html>
