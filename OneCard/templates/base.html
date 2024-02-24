@@ -3,9 +3,9 @@
 <head>
     <title>{% block title %}{% endblock %}</title>
     {% block style %} {% endblock %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
 </head>
 <body>
-    <h1>Welcome, {% block name %}{% endblock %}!</h1>
 
     <div>
         <h3>Menu</h3>

@@ -1,10 +1,17 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+
+
 
 app = Flask(__name__)
 app.secret_key = 'abcdef'  # secret key do not change it
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example.db'  # do not change it
 db = SQLAlchemy(app)
+
+
+
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -16,6 +23,17 @@ class User(db.Model):
     blood_group = db.Column(db.String(5), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
+    appointments = db.relationship('Appointment', backref='user', lazy=True)
+
+
+class Appointment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    doctor_name = db.Column(db.String(50), nullable=False)
+    appointment_date = db.Column(db.Date, nullable=False)
+    appointment_time = db.Column(db.Time, nullable=False)
+    status = db.Column(db.Text)
+    notes = db.Column(db.Text)
 
 with app.app_context():
     db.create_all()
@@ -84,8 +102,10 @@ def login():
 @app.route("/dashboard")
 def dashboard():
     if 'user_id' in session:
-        name = session['name']
-        return render_template("dashboard.html", name=name)
+        user_id = session['user_id']
+        user = User.query.get(user_id)
+        appointments = user.appointments
+        return render_template("dashboard.html", user=user,appointments = appointments)
     else:
         return redirect(url_for('login'))
 
@@ -111,6 +131,37 @@ def view_history():
 def logout():
     session.clear()
     return redirect(url_for('home'))
+
+@app.route("/book_appointment", methods=['GET', 'POST'])
+def book_appointment():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    user = User.query.get(user_id)
+
+    if request.method == 'POST':
+        doctor_name = request.form['doctor_name']
+        appointment_date = datetime.strptime(request.form['appointment_date'], '%Y-%m-%d').date()
+        appointment_time = datetime.strptime(request.form['appointment_time'], '%H:%M').time()
+        notes = request.form['notes']
+
+        appointment = Appointment(
+            user=user,
+            doctor_name=doctor_name,
+            appointment_date=appointment_date,
+            appointment_time=appointment_time,
+            status = "pending",
+            notes=notes
+        )
+
+        db.session.add(appointment)
+        db.session.commit()
+
+        flash('Appointment requested successfully! It is pending approval.', 'success')
+        return redirect(url_for('dashboard'))
+
+    return render_template("book_appointment.html", user=user)
 
 if __name__ == "__main__":
     app.run(debug=True)
