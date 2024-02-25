@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scan QR Code</title>
+</head>
+<body>
+    <h1>Scan QR Code</h1>
+    <form action="{{ url_for('process_qr_code') }}" method="POST" enctype="multipart/form-data">
+        <label for="qr_code">Scan QR Code:</label>
+        <input type="file" id="qr_code" name="qr_code" accept="image/*" capture="environment"><br><br>
+
+        <button type="submit">Scan QR Code</button>
+    </form>
+</body>
+</html>

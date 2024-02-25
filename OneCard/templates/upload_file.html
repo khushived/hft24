@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload PDF File</title>
+</head>
+<body>
+    <h1>Upload PDF File</h1>
+    <form action="{{ url_for('upload_pdf') }}" method="POST" enctype="multipart/form-data">
+        <label for="pdf_file">Choose PDF File:</label>
+        <input type="file" id="pdf_file" name="pdf_file" accept=".pdf"><br><br>
+
+        <button type="submit">Upload PDF File</button>
+    </form>
+</body>
+</html>

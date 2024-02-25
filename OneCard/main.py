@@ -4,7 +4,7 @@ import qrcode
 import uuid
 from io import BytesIO
 from werkzeug.security import check_password_hash, generate_password_hash
-
+from flask import send_from_directory
 
 app = Flask(__name__)
 app.secret_key = 'abcdef'  # secret key do not change it
@@ -201,6 +201,60 @@ def profile():
     else:
         return redirect(url_for('login'))
 
+@app.route("/profile/<user_id>")
+def userOptiond(user_id):
+    return render_template("options.html", user_id = user_id)
+
+@app.route("/scan", methods=['GET', 'POST'])
+def scan_qr_code():
+    if request.method == 'POST':
+        # Check if a QR code image is uploaded
+        if 'qr_code' in request.files:
+            qr_code_image = request.files['qr_code']
+            # Process the QR code image (you need to implement this part)
+
+            # For demonstration purposes, let's assume the QR code is successfully processed
+            # and we display the options to the user
+            return render_template("options.html")
+        else:
+            # Handle if no QR code image is uploaded
+            return "No QR code image uploaded. Please try again."
+
+    # Render the scan page if it's a GET request
+    return render_template("scan.html")
+@app.route("/view_options")
+def view_options():
+    # Implement the logic for viewing options
+    return "View Options Page"
+
+@app.route("/upload_pdf")
+def upload_pdf():
+    if request.method == 'POST':
+        # Check if the POST request has the file part
+        if 'pdf_file' not in request.files:
+            flash('No file part', 'error')
+            return redirect(request.url)
+        
+        pdf_file = request.files['pdf_file']
+
+        # If the user does not select a file, the browser submits an empty file without a filename
+        if pdf_file.filename == '':
+            flash('No selected file', 'error')
+            return redirect(request.url)
+
+        # Check if the file is a PDF
+        if pdf_file and pdf_file.filename.endswith('.pdf'):
+            # Save the uploaded PDF file to the upload folder
+            filename = secure_filename(pdf_file.filename)
+            pdf_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            flash('File uploaded successfully', 'success')
+            return redirect(url_for('view_uploaded_file', filename=filename))
+        else:
+            flash('Invalid file format. Please upload a PDF file.', 'error')
+            return redirect(request.url)
+
+    return render_template("upload_pdf.html")
+
 @app.route("/book_appointment", methods=['GET', 'POST'])
 def book_appointment():
     if 'user_id' in session:
@@ -220,6 +274,9 @@ def book_appointment():
         return render_template("book_appointment.html")
     else:
         return redirect(url_for('login'))
+@app.route('/uploads/<filename>')
+def view_uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
     
 @app.route("/doctor_profile/<int:doctor_id>")
 def doctor_profile(doctor_id):
